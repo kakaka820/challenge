@@ -3,171 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <title>アンケート</title>
-  <style>
-    .step { display: none; }
-    .step.active { display: block; }
-  </style>
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+</head>
+<body>
+  <div id="app">
+    <!-- Step 1: 名前入力 -->
+    <div id="step1" style="display:block;">
+      <h2>名前を入力してください</h2>
+      <input type="text" id="nameInput" placeholder="名前を入力">
+      <button onclick="nextStep(2)">次へ</button>
+    </div>
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDY2qQHODhC5lPN8ybWk4VoCg-ivOMiYrE",
+    <!-- Step 2: セット1 -->
+    <div id="step2" style="display:none;">
+      <h2>最初の3つの数字を選んでください</h2>
+      <select id="set1-1" required></select>
+      <select id="set1-2" required></select>
+      <select id="set1-3" required></select>
+      <button onclick="nextStep(3)">次へ</button>
+    </div>
+
+    <!-- Step 3: セット2 -->
+    <div id="step3" style="display:none;">
+      <h2>次の3つの数字を選んでください</h2>
+      <select id="set2-1" required></select>
+      <select id="set2-2" required></select>
+      <select id="set2-3" required></select>
+      <button onclick="submitAnswer()">送信</button>
+    </div>
+
+    <!-- Step 4: 完了 -->
+    <div id="step4" style="display:none;">
+      <h2>回答を受け付けました！</h2>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    // ✅ Firebase設定（自分のやつに差し替えてね）
+    const firebaseConfig = {
+      apiKey: "AIzaSyDY2qQHODhC5lPN8ybWk4VoCg-ivOMiYrE",
     authDomain: "challenge-59258.firebaseapp.com",
     projectId: "challenge-59258",
     storageBucket: "challenge-59258.firebasestorage.app",
     messagingSenderId: "1035301361775",
     appId: "1:1035301361775:web:e5b29b735dd95d23c1559a",
     measurementId: "G-27VD3GZ7CT"
-  };
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getFirestore(app);   // ★ Firestoreの初期化
+    };
 
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    let userName = "";
-    let set1 = [];
-    let set2 = [];
-
+    // ✅ 画面切り替え
     function showStep(step) {
-      document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
-      document.getElementById(`step${step}`).classList.add("active");
-    }
-
-    function hasDuplicate(arr) {
-      return new Set(arr).size !== arr.length;
-    }
-
-    // Step1 → Step2
-    function goToStep2() {
-      userName = document.getElementById("name").value.trim();
-      if (!userName) {
-        alert("名前を入力してください。");
-        return;
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById("step" + i).style.display = (i === step ? "block" : "none");
       }
-      showStep(2);
     }
 
-    // Step2 → Step3
-    function goToStep3() {
-      set1 = [
+    window.nextStep = function(step) {
+      showStep(step);
+    };
+
+    // ✅ セレクトボックスに 1〜14 を挿入
+    function populateSelects(prefix) {
+      for (let i = 1; i <= 3; i++) {
+        const select = document.getElementById(`${prefix}-${i}`);
+        select.innerHTML = '<option value="">選択してください</option>';
+        for (let n = 1; n <= 14; n++) {
+          select.innerHTML += `<option value="${n}">${i}番目: ${n}</option>`;
+        }
+      }
+    }
+
+    // ✅ 送信処理
+    window.submitAnswer = async function() {
+      const name = document.getElementById("nameInput").value.trim();
+      const set1 = [
         document.getElementById("set1-1").value,
         document.getElementById("set1-2").value,
         document.getElementById("set1-3").value
       ];
-      if (set1.includes("")) {
-        alert("3つすべて選んでください。");
-        return;
-      }
-      if (hasDuplicate(set1)) {
-        alert("同じ数字は選べません。");
-        return;
-      }
-      showStep(3);
-    }
-
-    // Step3 → Step4
-    async function submitAnswer() {
-      set2 = [
+      const set2 = [
         document.getElementById("set2-1").value,
         document.getElementById("set2-2").value,
         document.getElementById("set2-3").value
       ];
-      if (set2.includes("")) {
-        alert("3つすべて選んでください。");
-        return;
-      }
-      if (hasDuplicate(set2)) {
-        alert("同じ数字は選べません。");
+
+      if (!name || set1.includes("") || set2.includes("")) {
+        alert("すべての項目を入力してください");
         return;
       }
 
       try {
         await addDoc(collection(db, "answers"), {
-          name: userName,
-          set1: set1.map(Number),
-          set2: set2.map(Number),
+          name: name,
+          set1: set1,
+          set2: set2,
           createdAt: serverTimestamp()
         });
         showStep(4);
-      } catch (err) {
-        console.error(err);
-        alert("エラーが発生しました。もう一度試してください。");
+      } catch (e) {
+        console.error("保存に失敗:", e);
+        alert("エラーが発生しました");
       }
-    }
+    };
 
+    // ✅ 初期化
     window.addEventListener("DOMContentLoaded", () => {
-      showStep(1); // 最初はStep1を表示
+      showStep(1);
+      populateSelects("set1");
+      populateSelects("set2");
     });
   </script>
-</head>
-<body>
-  <!-- Step1 名前入力 -->
-  <div id="step1" class="step">
-    <h2>お名前を入力してください</h2>
-    <input type="text" id="name" placeholder="名前を入力">
-    <button onclick="goToStep2()">次へ</button>
-  </div>
-
-  <!-- Step2 数字セット1 -->
-  <div id="step2" class="step">
-    <h2>1回目の選択</h2>
-    <label>1番目:
-      <select id="set1-1" required>
-        <option value="">選択してください</option>
-        ${Array.from({length: 14}, (_, i) => `<option value="${i+1}">①${i+1}</option>`).join("")}
-      </select>
-    </label>
-    <label>2番目:
-      <select id="set1-2" required>
-        <option value="">選択してください</option>
-        ${Array.from({length: 14}, (_, i) => `<option value="${i+1}">②${i+1}</option>`).join("")}
-      </select>
-    </label>
-    <label>3番目:
-      <select id="set1-3" required>
-        <option value="">選択してください</option>
-        ${Array.from({length: 14}, (_, i) => `<option value="${i+1}">③${i+1}</option>`).join("")}
-      </select>
-    </label>
-    <br>
-    <button onclick="goToStep3()">次へ</button>
-  </div>
-
-  <!-- Step3 数字セット2 -->
-  <div id="step3" class="step">
-    <h2>2回目の選択</h2>
-    <label>1番目:
-      <select id="set2-1" required>
-        <option value="">選択してください</option>
-        ${Array.from({length: 14}, (_, i) => `<option value="${i+1}">①${i+1}</option>`).join("")}
-      </select>
-    </label>
-    <label>2番目:
-      <select id="set2-2" required>
-        <option value="">選択してください</option>
-        ${Array.from({length: 14}, (_, i) => `<option value="${i+1}">②${i+1}</option>`).join("")}
-      </select>
-    </label>
-    <label>3番目:
-      <select id="set2-3" required>
-        <option value="">選択してください</option>
-        ${Array.from({length: 14}, (_, i) => `<option value="${i+1}">③${i+1}</option>`).join("")}
-      </select>
-    </label>
-    <br>
-    <button onclick="submitAnswer()">送信</button>
-  </div>
-
-  <!-- Step4 完了 -->
-  <div id="step4" class="step">
-    <h2>回答を受け付けました！</h2>
-    <p>ご協力ありがとうございました。</p>
-  </div>
 </body>
 </html>
