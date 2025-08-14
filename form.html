@@ -19,7 +19,10 @@
       <select id="set1-1" required></select>
       <select id="set1-2" required></select>
       <select id="set1-3" required></select>
-      <button onclick="nextStep(3)">次へ</button>
+      <div>
+        <button onclick="prevStep(1)">戻る</button>
+        <button onclick="validateSet1()">次へ</button>
+      </div>
     </div>
 
     <!-- Step 3: セット2 -->
@@ -28,7 +31,10 @@
       <select id="set2-1" required></select>
       <select id="set2-2" required></select>
       <select id="set2-3" required></select>
-      <button onclick="submitAnswer()">送信</button>
+      <div>
+        <button onclick="prevStep(2)">戻る</button>
+        <button onclick="submitAnswer()">送信</button>
+      </div>
     </div>
 
     <!-- Step 4: 完了 -->
@@ -46,12 +52,19 @@
     // ✅ Firebase設定（自分のやつに差し替えてね）
     const firebaseConfig = {
       apiKey: "AIzaSyDY2qQHODhC5lPN8ybWk4VoCg-ivOMiYrE",
+
     authDomain: "challenge-59258.firebaseapp.com",
+
     projectId: "challenge-59258",
+
     storageBucket: "challenge-59258.firebasestorage.app",
+
     messagingSenderId: "1035301361775",
+
     appId: "1:1035301361775:web:e5b29b735dd95d23c1559a",
+
     measurementId: "G-27VD3GZ7CT"
+
     };
 
     const app = initializeApp(firebaseConfig);
@@ -68,6 +81,10 @@
       showStep(step);
     };
 
+    window.prevStep = function(step) {
+      showStep(step);
+    };
+
     // ✅ セレクトボックスに 1〜14 を挿入
     function populateSelects(prefix) {
       for (let i = 1; i <= 3; i++) {
@@ -78,6 +95,28 @@
         }
       }
     }
+
+    // ✅ 1セット目の重複確認してから次へ
+    window.validateSet1 = function() {
+      const set1 = [
+        document.getElementById("set1-1").value,
+        document.getElementById("set1-2").value,
+        document.getElementById("set1-3").value
+      ];
+
+      if (set1.includes("")) {
+        alert("すべての項目を選択してください");
+        return;
+      }
+
+      const unique = new Set(set1);
+      if (unique.size !== set1.length) {
+        alert("同じ数字を複数選ぶことはできません");
+        return;
+      }
+
+      nextStep(3);
+    };
 
     // ✅ 送信処理
     window.submitAnswer = async function() {
@@ -95,6 +134,13 @@
 
       if (!name || set1.includes("") || set2.includes("")) {
         alert("すべての項目を入力してください");
+        return;
+      }
+
+      // ✅ セット2も重複確認
+      const unique2 = new Set(set2);
+      if (unique2.size !== set2.length) {
+        alert("同じ数字を複数選ぶことはできません");
         return;
       }
 
