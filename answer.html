@@ -125,12 +125,12 @@ const hash = await sha256(password);
   tbody.innerHTML = "";
 
   // ポイント計算関数
-  function calculatePoints(answer, correct, dobon) {
+  function calculatePoints(answer, correctArray, dobon) {
     let points = 0;
     answer.forEach((val, idx) => {
       if (val === dobon) {
         points -= 2;
-      } else if (val === correct[idx]) {
+      } else if (correctArray.includes(val)) {
         points += [10, 6, 3][idx];
       }
     });
