@@ -15,7 +15,7 @@
 
     <!-- Step 2: セット1 -->
     <div id="step2" style="display:none;">
-      <h2>最初の3つの数字を選んでください</h2>
+      <h2>村役を自信のある順番に三人選択してください。</h2>
       <select id="set1-1" required></select>
       <select id="set1-2" required></select>
       <select id="set1-3" required></select>
@@ -27,7 +27,7 @@
 
     <!-- Step 3: セット2 -->
     <div id="step3" style="display:none;">
-      <h2>次の3つの数字を選んでください</h2>
+      <h2>人狼を自信のある順番に三人選択してください。</h2>
       <select id="set2-1" required></select>
       <select id="set2-2" required></select>
       <select id="set2-3" required></select>
@@ -84,10 +84,9 @@
 
       if (docSnap.exists()) {
         alert("この名前はすでに使われています。別の名前を入力してください。");
-        return; // 次へ進まない
+        return; 
       }
 
-      // ドキュメントが存在しなければそのまま進む
     }
     showStep(step);
   };
@@ -96,7 +95,7 @@
     showStep(step);
   };
 
-  // ✅ セレクトボックスに 1〜14 を挿入
+
   function populateSelects(prefix) {
     for (let i = 1; i <= 3; i++) {
       const select = document.getElementById(`${prefix}-${i}`);
@@ -107,7 +106,7 @@
     }
   }
 
-  // ✅ 1セット目の重複確認してから次へ
+  // 1セット目の重複確認
   window.validateSet1 = function() {
     const set1 = [
       document.getElementById("set1-1").value,
@@ -129,7 +128,7 @@
     nextStep(3);
   };
 
-  // ✅ 送信処理
+  // 
   window.submitAnswer = async function() {
     const name = document.getElementById("nameInput").value.trim();
     const set1 = [
@@ -148,7 +147,7 @@
       return;
     }
 
-    // ✅ セット2も重複確認
+    //  セット2も重複確認
     const unique2 = new Set(set2);
     if (unique2.size !== set2.length) {
       alert("同じ数字を複数選ぶことはできません");
