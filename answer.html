@@ -46,6 +46,9 @@
   import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
+      // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
     const db = getFirestore(app);
     async function sha256(str) {
   const encoder = new TextEncoder();
@@ -67,10 +70,6 @@
     appId: "1:1035301361775:web:e5b29b735dd95d23c1559a",
     measurementId: "G-27VD3GZ7CT"
   };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
 
     const loginBtn = document.getElementById("loginBtn");
     const loginForm = document.getElementById("loginForm");
