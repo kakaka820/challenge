@@ -32,6 +32,7 @@
           <th>名前（ドキュメントID）</th>
           <th>Set1</th>
           <th>Set2</th>
+          <th>ポイント</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -112,21 +113,47 @@ const hash = await sha256(password);
 
     // answersコレクションを読み込んで表示
     async function loadAnswers() {
-      const answersSnap = await getDocs(collection(db, "answers"));
-      const tbody = document.querySelector("#answersTable tbody");
-      tbody.innerHTML = "";
+  // 正解セットを取得
+  const correctSnap = await getDoc(doc(db, "correct", "answers"));
+  const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [], dobon: null };
+  const correctSet1 = correctData.set1 || [];
+  const correctSet2 = correctData.set2 || [];
+  const dobon = correctData.dobon;
 
-      answersSnap.forEach(docSnap => {
-        const data = docSnap.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${docSnap.id}</td>
-          <td>${(data.set1 || []).join(", ")}</td>
-          <td>${(data.set2 || []).join(", ")}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+  const answersSnap = await getDocs(collection(db, "answers"));
+  const tbody = document.querySelector("#answersTable tbody");
+  tbody.innerHTML = "";
+
+  // ポイント計算関数
+  function calculatePoints(answer, correct, dobon) {
+    let points = 0;
+    answer.forEach((val, idx) => {
+      if (val === dobon) {
+        points -= 2;
+      } else if (val === correct[idx]) {
+        points += [10, 6, 3][idx];
+      }
+    });
+    return points;
+  }
+
+  answersSnap.forEach(docSnap => {
+    const data = docSnap.data();
+    const set1Points = calculatePoints(data.set1 || [], correctSet1, dobon);
+    const set2Points = calculatePoints(data.set2 || [], correctSet2, dobon);
+    const totalPoints = set1Points + set2Points;
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${docSnap.id}</td>
+      <td>${(data.set1 || []).join(", ")}</td>
+      <td>${(data.set2 || []).join(", ")}</td>
+      <td>${totalPoints}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
   </script>
 </body>
 </html>
