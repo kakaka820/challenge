@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>管理画面</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    #loginForm, #dataView { max-width: 400px; margin: auto; }
+  </style>
+</head>
+<body>
+  <h1>管理画面</h1>
+
+  <!-- ログインフォーム -->
+  <div id="loginForm">
+    <h2>ログイン</h2>
+    <input type="text" id="adminName" placeholder="管理者名"><br><br>
+    <input type="password" id="adminPassword" placeholder="パスワード"><br><br>
+    <button id="loginBtn">ログイン</button>
+    <p id="loginError" style="color:red;"></p>
+  </div>
+
+  <!-- データ表示部分 -->
+  <div id="dataView" style="display:none;">
+    <h2>回答一覧</h2>
+    <table id="answersTable">
+      <thead>
+        <tr>
+          <th>名前（ドキュメントID）</th>
+          <th>Set1</th>
+          <th>Set2</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDY2qQHODhC5lPN8ybWk4VoCg-ivOMiYrE",
+    authDomain: "challenge-59258.firebaseapp.com",
+    projectId: "challenge-59258",
+    storageBucket: "challenge-59258.firebasestorage.app",
+    messagingSenderId: "1035301361775",
+    appId: "1:1035301361775:web:e5b29b735dd95d23c1559a",
+    measurementId: "G-27VD3GZ7CT"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+    const loginBtn = document.getElementById("loginBtn");
+    const loginForm = document.getElementById("loginForm");
+    const dataView = document.getElementById("dataView");
+    const loginError = document.getElementById("loginError");
+
+    // ログイン処理
+    loginBtn.addEventListener("click", async () => {
+      const name = document.getElementById("adminName").value.trim();
+      const password = document.getElementById("adminPassword").value;
+
+      if (!name || !password) {
+        loginError.textContent = "名前とパスワードを入力してください";
+        return;
+      }
+
+      // パスワードをハッシュ化
+      const hash = SHA256.SHA256(password).toString();
+
+      // Firestore の admins コレクションから該当ユーザーを取得
+      const adminRef = doc(db, "admins", name);
+      const adminSnap = await getDoc(adminRef);
+
+      if (!adminSnap.exists()) {
+        loginError.textContent = "管理者が存在しません";
+        return;
+      }
+
+      const adminData = adminSnap.data();
+      if (adminData.passwordHash !== hash) {
+        loginError.textContent = "パスワードが正しくありません";
+        return;
+      }
+
+      // 認証成功 → データ表示
+      loginForm.style.display = "none";
+      dataView.style.display = "block";
+      loadAnswers();
+    });
+
+    // answersコレクションを読み込んで表示
+    async function loadAnswers() {
+      const answersSnap = await getDocs(collection(db, "answers"));
+      const tbody = document.querySelector("#answersTable tbody");
+      tbody.innerHTML = "";
+
+      answersSnap.forEach(docSnap => {
+        const data = docSnap.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${docSnap.id}</td>
+          <td>${(data.set1 || []).join(", ")}</td>
+          <td>${(data.set2 || []).join(", ")}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+  </script>
+</body>
+</html>
