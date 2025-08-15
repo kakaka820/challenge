@@ -80,8 +80,8 @@
       // パスワードをハッシュ化
       const hash = SHA256.SHA256(password).toString();
 
-      // Firestore の admins コレクションから該当ユーザーを取得
-      const adminRef = doc(db, "admins", name);
+      // Firestore の admin コレクションから該当ユーザーを取得
+      const adminRef = doc(db, "admin", name);
       const adminSnap = await getDoc(adminRef);
 
       if (!adminSnap.exists()) {
@@ -90,7 +90,7 @@
       }
 
       const adminData = adminSnap.data();
-      if (adminData.passwordHash !== hash) {
+      if (adminData.pw !== hash) {
         loginError.textContent = "パスワードが正しくありません";
         return;
       }
