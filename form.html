@@ -46,10 +46,9 @@
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp }
+    import { getFirestore, doc, setDoc, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-    // ✅ Firebase設定（自分のやつに差し替えてね）
     const firebaseConfig = {
       apiKey: "AIzaSyDY2qQHODhC5lPN8ybWk4VoCg-ivOMiYrE",
 
@@ -145,8 +144,7 @@
       }
 
       try {
-        await addDoc(collection(db, "answers"), {
-          name: name,
+        await setDoc(doc(db, "answers", name), {
           set1: set1,
           set2: set2,
           createdAt: serverTimestamp()
