@@ -15,13 +15,15 @@
 
     <!-- Step 2: セット1 -->
     <div id="step2" style="display:none;">
-      <h2>村役を自信のある順番に三人選択してください。</h2>
+      <h2>村役を自信のある順番に三人選択してください。
+      </h2>
       <select id="set1-1" required></select>
       <select id="set1-2" required></select>
       <select id="set1-3" required></select>
       <div>
         <button onclick="prevStep(1)">戻る</button>
         <button onclick="validateSet1()">次へ</button>
+        
       </div>
     </div>
 
@@ -47,3 +49,9 @@
   <script type="module" src="./form.js"></script>
 </body>
 </html>
+管理者画面からcorrectの設定帰れるようにする
+→CO済と潜伏で参照する点数かえる（オンオフボタン？）
+得点表つくる
+潜伏/CO済
+1番目、2番目、3番目
+狂人を引いた場合、得られるはずだったポイント分マイナス
