@@ -64,7 +64,7 @@ window.validateSet1 = function() {
     document.getElementById("set1-3").value
   ];
   if (set1.includes("")) { alert("すべての項目を選択してください"); return; }
-  if (new Set(set1).size !== set1.length) { alert("同じ数字を複数選ぶことはできません"); return; }
+  if (new Set(set1).size !== set1.length) { alert("同じ数字を複数して選ぶことはできません"); return; }
   nextStep(3);
 };
 
@@ -83,7 +83,7 @@ window.submitAnswer = async function() {
 
   if (!name || set1.includes("") || set2.includes("")) { alert("すべての項目を入力してください"); return; }
   if (new Set(set1).size !== set1.length || new Set(set2).size !== set2.length) {
-    alert("同じ数字を複数選ぶことはできません"); return;
+    alert("同じ数字を複数して選ぶことはできません"); return;
   }
 
   try {
