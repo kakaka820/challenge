@@ -1,10 +1,17 @@
 /* ベース設定 */
 body {
   font-family: sans-serif;
-  background-color: #f9f9f9;
   margin: 0;
   padding: 0;
+  background: #f9f9f9;
 }
+
+#app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
 
 .container {
   max-width: 600px;
@@ -17,8 +24,9 @@ body {
 
 /* 見出し */
 h2 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
   text-align: center;
-  margin-bottom: 20px;
 }
 
 /* 入力フォーム */
@@ -60,12 +68,18 @@ button.secondary:hover {
 }
 
 /* スマホ対応 */
-@media (max-width: 600px) {
-  .container {
-    padding: 12px;
+@media (max-width: 480px) {
+  h2 {
+    font-size: 1rem;
   }
-  button {
+  .btn {
     width: 100%;
     margin: 6px 0;
+  }
+  table {
+    font-size: 0.9rem;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }
