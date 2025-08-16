@@ -3,44 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <title>アンケート</title>
+  <link rel="stylesheet" href="./form.css">
 </head>
 <body>
   <div id="app">
     <!-- Step 1: 名前入力 -->
-    <div id="step1" style="display:block;">
+    <div id="step1" class="step active">
       <h2>名前を入力してください</h2>
-      <input type="text" id="nameInput" placeholder="名前">
-      <button onclick="nextStep(2)">次へ</button>
+      <input type="text" id="nameInput" placeholder="名前" class="input-text">
+      <button type="button" class="btn" onclick="nextStep(2)">次へ</button>
     </div>
 
     <!-- Step 2: セット1 -->
-    <div id="step2" style="display:none;">
-      <h2>村役を自信のある順番に三人選択してください。
-      </h2>
-      <select id="set1-1" required></select>
-      <select id="set1-2" required></select>
-      <select id="set1-3" required></select>
-      <div>
-        <button onclick="prevStep(1)">戻る</button>
-        <button onclick="validateSet1()">次へ</button>
-        
+    <div id="step2" class="step">
+      <h2>村役を自信のある順番に三人選択してください。</h2>
+      <select id="set1-1" required class="select"></select>
+      <select id="set1-2" required class="select"></select>
+      <select id="set1-3" required class="select"></select>
+      <div class="button-group">
+        <button type="button" class="btn secondary" onclick="prevStep(1)">戻る</button>
+        <button type="button" class="btn" onclick="validateSet1()">次へ</button>
       </div>
     </div>
 
     <!-- Step 3: セット2 -->
-    <div id="step3" style="display:none;">
+    <div id="step3" class="step">
       <h2>人狼を自信のある順番に三人選択してください。</h2>
-      <select id="set2-1" required></select>
-      <select id="set2-2" required></select>
-      <select id="set2-3" required></select>
-      <div>
-        <button onclick="prevStep(2)">戻る</button>
-        <button onclick="submitAnswer()">送信</button>
+      <select id="set2-1" required class="select"></select>
+      <select id="set2-2" required class="select"></select>
+      <select id="set2-3" required class="select"></select>
+      <div class="button-group">
+        <button type="button" class="btn secondary" onclick="prevStep(2)">戻る</button>
+        <button type="button" class="btn" onclick="submitAnswer()">送信</button>
       </div>
     </div>
 
     <!-- Step 4: 完了 -->
-    <div id="step4" style="display:none;">
+    <div id="step4" class="step">
       <h2>回答を受け付けました！</h2>
     </div>
   </div>
@@ -49,9 +48,3 @@
   <script type="module" src="./form.js"></script>
 </body>
 </html>
-管理者画面からcorrectの設定帰れるようにする
-→CO済と潜伏で参照する点数かえる（オンオフボタン？）
-得点表つくる
-潜伏/CO済
-1番目、2番目、3番目
-狂人を引いた場合、得られるはずだったポイント分マイナス
