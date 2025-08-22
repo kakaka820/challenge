@@ -83,3 +83,21 @@ button.secondary:hover {
     white-space: nowrap;
   }
 }
+/* テーブル共通 */
+.score {
+  border-collapse: collapse;
+  text-align: center;
+  width: auto; /* 必要なら幅調整 */
+}
+
+.score th,
+.score td {
+  border: 1px solid black;
+  padding: 6px;
+}
+
+.note {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 6px;
+}
