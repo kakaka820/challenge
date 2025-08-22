@@ -9,9 +9,23 @@
   <div id="app">
     <!-- Step 1: 名前入力 -->
     <div id="step1" class="step active">
-      <h2>名前を入力してください</h2>
-      <input type="text" id="nameInput" placeholder="名前" class="input-text">
-      <button type="button" class="btn" onclick="nextStep(2)">次へ</button>
+      <div class="login-box">
+  <h2>ログイン</h2>
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="username">名前</label>
+      <input type="text" id="username" name="username" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">パスワード</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+
+    <button type="submit" class="btn">ログイン</button>
+  </form>
+</div>
+
     </div>
 
     <!-- Step 2: セット1 -->
