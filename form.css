@@ -60,6 +60,7 @@ button.secondary:hover {
 }
 
 /* スマホ対応 */
+
 @media (max-width: 600px) {
   table,
   thead,
@@ -74,14 +75,17 @@ button.secondary:hover {
   th {
     text-align: left;
     padding: 0.8em;
-  } {
+  }
+
   h2 {
     font-size: 1rem;
   }
+
   .btn {
     width: 100%;
     margin: 6px 0;
   }
+
   table {
     font-size: 0.9rem;
     display: block;
@@ -89,6 +93,7 @@ button.secondary:hover {
     white-space: nowrap;
   }
 }
+
 /* テーブル共通 */
 .score {
   border-collapse: collapse;
