@@ -30,20 +30,33 @@ function showStep(step) {
 
 window.nextStep = async function(step) {
   if (step === 2) {
-    const nameValue = document.getElementById("nameInput").value.trim();
-    if (!nameValue) {
-      alert("名前を入力してください");
+    const nameValue = document.getElementById("username").value.trim();
+    const pwValue = document.getElementById("password").value.trim();
+
+    if (!nameValue || !pwValue) {
+      alert("名前とパスワードを入力してください");
       return;
     }
+
     const docRef = doc(db, "answers", nameValue);
     const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      alert("この名前はすでに使われています。別の名前を入力してください。");
-      return; 
+
+    if (!docSnap.exists()) {
+      alert("ユーザーが存在しません");
+      return;
+    }
+
+    const data = docSnap.data();
+    const hashedInput = await sha256(pwValue);
+
+    if (data.password !== hashedInput) {
+      alert("パスワードが違います");
+      return;
     }
   }
   showStep(step);
 };
+
 
 window.prevStep = function(step) { showStep(step); };
 
