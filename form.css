@@ -60,7 +60,21 @@ button.secondary:hover {
 }
 
 /* スマホ対応 */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    /* スマホ対応で追加したい内容後で考える */
+  }
+
+  td,
+  th {
+    text-align: left;
+    padding: 0.8em;
+  } {
   h2 {
     font-size: 1rem;
   }
