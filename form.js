@@ -82,7 +82,7 @@ window.validateSet1 = function() {
 };
 
 window.submitAnswer = async function() {
-  const name = document.getElementById("nameInput").value.trim();
+  const name = document.getElementById("username").value.trim();
   const set1 = [
     document.getElementById("set1-1").value,
     document.getElementById("set1-2").value,
