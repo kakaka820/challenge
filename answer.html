@@ -237,6 +237,7 @@ const hash = await sha256(password);
   function calculatePoints(answer, correctArray, dobon) {
     let points = 0;
     answer.forEach((val, idx) => {
+      const numVal = parseInt(val);
       if (val === dobon) {
         points -= 2;
       } else if (correctArray.includes(val)) {
