@@ -238,9 +238,9 @@ const hash = await sha256(password);
     let points = 0;
     answer.forEach((val, idx) => {
       const numVal = parseInt(val);
-      if (val === dobon) {
+      if (numval === dobon) {
         points -= 2;
-      } else if (correctArray.includes(val)) {
+      } else if (correctArray.includes(numval)) {
         points += [6, 4, 2][idx];
       }
     });
