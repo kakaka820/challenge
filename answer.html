@@ -236,11 +236,13 @@ const hash = await sha256(password);
   // ポイント計算関数
   function calculatePoints(answer, correctArray, dobon) {
     let points = 0;
+    const correctNums = correctArray.map(n => Number(n));
+  const dobonNum = Number(dobon);
     answer.forEach((val, idx) => {
-      const numVal = parseInt(val);
-      if (numVal === dobon) {
+      const numVal = Number(val);
+      if (numVal === dobonNum) {
         points -= 2;
-      } else if (correctArray.includes(numval)) {
+      } else if (correctNums.includes(numVal)) {
         points += [6, 4, 2][idx];
       }
     });
