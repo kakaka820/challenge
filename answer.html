@@ -249,15 +249,15 @@ loginBtn.addEventListener("click", async () => {
 });
 
 // ポイント計算
-function calculatePoints(answerArray, correctArray, dobon) {
+function calculatePoints(answerArray, correctArray, dobon, correctData) {
   let total = 0;
   answerArray.forEach((val, idx) => {
     const point = [6,4,2][idx];
     const correctItem = correctArray.find(c => c.num === Number(val));
     if (Number(val) === dobon) {
-  const dobonHalf = correctData.dobonHalf || false;
-  total -= dobonHalf ? Math.ceil(point / 2) : point;
-} else if (correctItem) {
+      const dobonHalf = correctData.dobonHalf || false;
+      total -= dobonHalf ? Math.ceil(point / 2) : point;
+    } else if (correctItem) {
       total += correctItem.half ? Math.ceil(point/2) : point;
     }
   });
@@ -274,8 +274,9 @@ async function loadAnswers() {
 
   answersSnap.forEach(docSnap => {
     const data = docSnap.data();
-    const set1Points = calculatePoints(data.set1 || [], correctData.set1 || [], correctData.dobon);
-    const set2Points = calculatePoints(data.set2 || [], correctData.set2 || [], correctData.dobon);
+    const set1Points = calculatePoints(data.set1 || [], correctData.set1 || [], correctData.dobon, correctData);
+const set2Points = calculatePoints(data.set2 || [], correctData.set2 || [], correctData.dobon, correctData);
+
     const totalPoints = set1Points + set2Points;
 
     let createdAtText = "";
