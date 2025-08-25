@@ -24,21 +24,40 @@
   </div>
 
   <!-- データ表示部分 -->
-  <div id="dataView" style="display:none;">
-    <h2>回答一覧</h2>
-    <table id="answersTable">
-      <thead>
-        <tr>
-          <th>名前（ドキュメントID）</th>
-          <th>村役</th>
-          <th>人狼</th>
-          <th>ポイント</th>
-          <th>最終更新時間</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<div id="dataView" style="display:none;">
+  <h2>正解セット設定</h2>
+  <form id="correctForm">
+    <div>
+      <h3>Set1 (3つ選択)</h3>
+      <div id="set1Options"></div>
+    </div>
+    <div>
+      <h3>Set2 (3つ選択)</h3>
+      <div id="set2Options"></div>
+    </div>
+    <div>
+      <h3>Dobon (1つ選択)</h3>
+      <div id="dobonOptions"></div>
+    </div>
+    <button type="submit">保存</button>
+    <p id="saveMessage" style="color:green;"></p>
+  </form>
+
+  <h2>回答一覧</h2>
+  <table id="answersTable">
+    <thead>
+      <tr>
+        <th>名前（ドキュメントID）</th>
+        <th>村役</th>
+        <th>人狼</th>
+        <th>ポイント</th>
+        <th>最終更新時間</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
 
   <!-- Firebase SDK -->
   <script type="module">
