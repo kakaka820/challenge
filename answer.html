@@ -239,15 +239,22 @@ const hash = await sha256(password);
     const correctNums = correctArray.map(n => Number(n));
   const dobonNum = Number(dobon);
     answer.forEach((val, idx) => {
-      const numVal = Number(val);
+    const numVal = Number(val);
+    let point = 0;
+      if (correctNums.includes(numVal)) {
+      point = [6, 4, 2][idx];
+    }
       if (numVal === dobonNum) {
-        points -= 2;
-      } else if (correctNums.includes(numVal)) {
-        points += [6, 4, 2][idx];
-      }
-    });
-    return points;
-  }
+      points -= point;  // ← 本来得られるはずのポイント分マイナス
+    } else {
+      points += point;  // ← 正解で dobond じゃなければ加算
+    }
+  });
+
+  return points;
+}
+      
+    
 
   answersSnap.forEach(docSnap => {
     const data = docSnap.data();
