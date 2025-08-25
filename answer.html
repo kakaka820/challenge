@@ -235,24 +235,25 @@ const hash = await sha256(password);
 
   // ポイント計算関数
   function calculatePoints(answer, correctArray, dobon) {
-    let points = 0;
-    const correctNums = correctArray.map(n => Number(n));
+  let points = 0;
+  const correctNums = correctArray.map(n => Number(n));
   const dobonNum = Number(dobon);
-    answer.forEach((val, idx) => {
+
+  answer.forEach((val, idx) => {
     const numVal = Number(val);
-    let point = 0;
-      if (correctNums.includes(numVal)) {
-      point = [6, 4, 2][idx];
+    const pointForThisCard = [6, 4, 2][idx]; // 回答順でポイント決定
+
+    if (numVal === dobonNum) {
+      points -= pointForThisCard; // dobonならマイナス
+    } else if (correctNums.includes(numVal)) {
+      points += pointForThisCard; // 正解なら加算
     }
-      if (numVal === dobonNum) {
-      points -= point;  // ← 本来得られるはずのポイント分マイナス
-    } else {
-      points += point;  // ← 正解で dobond じゃなければ加算
-    }
+    // 正解でもdobondでもなければ0点
   });
 
   return points;
 }
+
       
     
 
