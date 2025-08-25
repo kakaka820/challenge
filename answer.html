@@ -288,8 +288,8 @@ async function loadAnswers() {
     const row = document.createElement("tr");
     row.innerHTML=`
       <td>${docSnap.id}</td>
-      <td>${(data.set1||[]).map(v=>v.num).join(", ")}</td>
-      <td>${(data.set2||[]).map(v=>v.num).join(", ")}</td>
+      <td>${(data.set1||[]).map(v => v.num ?? v).join(", ")}</td>
+<td>${(data.set2||[]).map(v => v.num ?? v).join(", ")}</td>
       <td>${totalPoints}</td>
       <td>${createdAtText}</td>
     `;
