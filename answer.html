@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>管理画面</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #f2f2f2; }
-    #loginForm, #dataView { max-width: 400px; margin: auto; }
-  </style>
+<meta charset="UTF-8">
+<title>管理画面</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background-color: #f2f2f2; }
+  #loginForm, #dataView { max-width: 400px; margin: auto; }
+</style>
 </head>
 <body>
-  <h1>管理画面</h1>
+<h1>管理画面</h1>
 
-  <!-- ログイン -->
-  <div id="loginForm">
-    <h2>ログイン</h2>
-    <input type="text" id="adminName" placeholder="管理者名"><br><br>
-    <input type="password" id="adminPassword" placeholder="パスワード"><br><br>
-    <button id="loginBtn">ログイン</button>
-    <p id="loginError" style="color:red;"></p>
-  </div>
+<div id="loginForm">
+  <h2>ログイン</h2>
+  <input type="text" id="adminName" placeholder="管理者名"><br><br>
+  <input type="password" id="adminPassword" placeholder="パスワード"><br><br>
+  <button id="loginBtn">ログイン</button>
+  <p id="loginError" style="color:red;"></p>
+</div>
 
-  <!-- データ表示部分 -->
 <div id="dataView" style="display:none;">
   <h2>正解セット設定</h2>
   <form id="correctForm">
@@ -58,59 +56,46 @@
   </table>
 </div>
 
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+import { getFirestore, doc, getDoc, collection, getDocs, setDoc } 
+from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-  <!-- Firebase SDK -->
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-  import { getFirestore, doc, getDoc, collection, getDocs, setDoc } 
-  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-     
-    async function sha256(str) {
+async function sha256(str) {
   const encoder = new TextEncoder();
   const data = encoder.encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyDY2qQHODhC5lPN8ybWk4VoCg-ivOMiYrE",
-    authDomain: "challenge-59258.firebaseapp.com",
-    projectId: "challenge-59258",
-    storageBucket: "challenge-59258.firebasestorage.app",
-    messagingSenderId: "1035301361775",
-    appId: "1:1035301361775:web:e5b29b735dd95d23c1559a",
-    measurementId: "G-27VD3GZ7CT"
-  };
-     // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-    const db = getFirestore(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyDY2qQHODhC5lPN8ybWk4VoCg-ivOMiYrE",
+  authDomain: "challenge-59258.firebaseapp.com",
+  projectId: "challenge-59258",
+  storageBucket: "challenge-59258.firebasestorage.app",
+  messagingSenderId: "1035301361775",
+  appId: "1:1035301361775:web:e5b29b735dd95d23c1559a",
+  measurementId: "G-27VD3GZ7CT"
+};
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getFirestore(app);
 
-    const loginBtn = document.getElementById("loginBtn");
-    const loginForm = document.getElementById("loginForm");
-    const dataView = document.getElementById("dataView");
-    const loginError = document.getElementById("loginError");
+const loginBtn = document.getElementById("loginBtn");
+const loginForm = document.getElementById("loginForm");
+const dataView = document.getElementById("dataView");
+const loginError = document.getElementById("loginError");
 
-
-    // 正解セット編集フォームの要素参照
 const correctForm = document.getElementById("correctForm");
 const set1Options = document.getElementById("set1Options");
 const set2Options = document.getElementById("set2Options");
 const dobonOptions = document.getElementById("dobonOptions");
 const saveMessage = document.getElementById("saveMessage");
 
-
-    // 数字 1〜14 をUIに描画する関数
+// 数字描画（半減チェック付き）
 function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null) {
-  function makeCheckboxes(container, name, limit, selectedValues) {
+  function makeCheckboxes(container, name, selectedValues) {
     container.innerHTML = "";
     for (let i = 1; i <= 14; i++) {
       const label = document.createElement("label");
@@ -118,12 +103,23 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
       checkbox.type = "checkbox";
       checkbox.name = name;
       checkbox.value = i;
-      if (selectedValues.includes(i)) checkbox.checked = true;
+      const found = selectedValues.find(v => v.num === i);
+      if (found) checkbox.checked = true;
       label.appendChild(checkbox);
       label.append(" " + i + " ");
+
+      // 半減チェック
+      const halfCheck = document.createElement("input");
+      halfCheck.type = "checkbox";
+      halfCheck.name = name + "_half_" + i;
+      halfCheck.checked = found ? found.half : false;
+      label.appendChild(halfCheck);
+      label.append(" 半減 ");
+
       container.appendChild(label);
     }
   }
+
   function makeRadio(container, name, selectedValue) {
     container.innerHTML = "";
     for (let i = 1; i <= 14; i++) {
@@ -139,29 +135,34 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
     }
   }
 
-  makeCheckboxes(set1Options, "set1", 3, selectedSet1);
-  makeCheckboxes(set2Options, "set2", 3, selectedSet2);
+  makeCheckboxes(set1Options, "set1", selectedSet1);
+  makeCheckboxes(set2Options, "set2", selectedSet2);
   makeRadio(dobonOptions, "dobon", selectedDobon);
 }
 
-
-// Firestore から正解セットを読み込んでフォームに反映
+// Firestoreからロード
 async function loadCorrectSet() {
   const correctSnap = await getDoc(doc(db, "correct", "answers"));
-  const correctData = correctSnap.exists()
-    ? correctSnap.data()
-    : { set1: [], set2: [], dobon: null };
+  const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [], dobon: null };
   renderOptions(correctData.set1 || [], correctData.set2 || [], correctData.dobon || null);
 }
 
-    // 保存処理
+// 保存処理
 correctForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const set1 = Array.from(document.querySelectorAll("input[name='set1']:checked"))
-    .map(cb => parseInt(cb.value));
-  const set2 = Array.from(document.querySelectorAll("input[name='set2']:checked"))
-    .map(cb => parseInt(cb.value));
+  function gatherSet(name) {
+    return Array.from(document.querySelectorAll(`input[name='${name}']`))
+      .filter(cb => cb.checked)
+      .map(cb => {
+        const num = parseInt(cb.value);
+        const half = document.querySelector(`input[name='${name}_half_${num}']`).checked;
+        return { num, half };
+      });
+  }
+
+  const set1 = gatherSet("set1");
+  const set2 = gatherSet("set2");
   const dobonEl = document.querySelector("input[name='dobon']:checked");
   const dobon = dobonEl ? parseInt(dobonEl.value) : null;
 
@@ -170,158 +171,74 @@ correctForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  await setDoc(doc(db, "correct", "answers"), {
-    set1,
-    set2,
-    dobon
-  });
-
+  await setDoc(doc(db, "correct", "answers"), { set1, set2, dobon });
   saveMessage.textContent = "保存しました！";
-  setTimeout(() => (saveMessage.textContent = ""), 2000);
-  // 更新後に回答一覧を再ロード
+  setTimeout(() => saveMessage.textContent = "", 2000);
   loadAnswers();
 });
 
-    
-    // ログイン処理
-    loginBtn.addEventListener("click", async () => {
-      const name = document.getElementById("adminName").value.trim();
-      const password = document.getElementById("adminPassword").value;
+// ログイン
+loginBtn.addEventListener("click", async () => {
+  const name = document.getElementById("adminName").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  if (!name || !password) { loginError.textContent = "名前とパスワードを入力してください"; return; }
+  const hash = await sha256(password);
 
-      if (!name || !password) {
-        loginError.textContent = "名前とパスワードを入力してください";
-        return;
-      }
-const hash = await sha256(password);
+  const adminRef = doc(db, "admin", name);
+  const adminSnap = await getDoc(adminRef);
+  if (!adminSnap.exists()) { loginError.textContent = "管理者が存在しません"; return; }
+  const adminData = adminSnap.data();
+  if (adminData.pw !== hash) { loginError.textContent = "パスワードが正しくありません"; return; }
 
-     
-      // Firestore の admin コレクションから該当ユーザーを取得
-      const adminRef = doc(db, "admin", name);
-      const adminSnap = await getDoc(adminRef);
-
-      if (!adminSnap.exists()) {
-        loginError.textContent = "管理者が存在しません";
-        return;
-      }
-
-      const adminData = adminSnap.data();
-      if (adminData.pw !== hash) {
-        loginError.textContent = "パスワードが正しくありません";
-        return;
-      }
-
-
-      
-
-      // 認証成功 → データ表示
-      loginForm.style.display = "none";
-      dataView.style.display = "block";
-      await loadCorrectSet();
+  loginForm.style.display = "none";
+  dataView.style.display = "block";
+  await loadCorrectSet();
   loadAnswers();
-    });
+});
 
-    // answersコレクションを読み込んで表示
-    async function loadAnswers() {
-  // 正解セットを取得
+// ポイント計算
+function calculatePoints(answerArray, correctArray, dobon) {
+  let total = 0;
+  answerArray.forEach((val, idx) => {
+    const point = [6,4,2][idx];
+    const correctItem = correctArray.find(c => c.num === Number(val));
+    if (Number(val) === dobon) {
+      total -= point;
+    } else if (correctItem) {
+      total += correctItem.half ? Math.ceil(point/2) : point;
+    }
+  });
+  return total;
+}
+
+// 回答表示
+async function loadAnswers() {
   const correctSnap = await getDoc(doc(db, "correct", "answers"));
   const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [], dobon: null };
-  const correctSet1 = correctData.set1 || [];
-  const correctSet2 = correctData.set2 || [];
-  const dobon = correctData.dobon;
-
   const answersSnap = await getDocs(collection(db, "answers"));
   const tbody = document.querySelector("#answersTable tbody");
   tbody.innerHTML = "";
 
-  // ポイント計算関数
-  function calculatePoints(answer, correctArray, dobon) {
-  let points = 0;
-  const correctNums = correctArray.map(n => Number(n));
-  const dobonNum = Number(dobon);
-
-  answer.forEach((val, idx) => {
-    const numVal = Number(val);
-    const pointForThisCard = [6, 4, 2][idx]; // 回答順でポイント決定
-
-    if (numVal === dobonNum) {
-      points -= pointForThisCard; // dobonならマイナス
-    } else if (correctNums.includes(numVal)) {
-      points += pointForThisCard; // 正解なら加算
-    }
-    // 正解でもdobondでもなければ0点
-  });
-
-  return points;
-}
-
-       answersSnap.forEach(docSnap => {
-    const data = docSnap.data();
-    const set1Points = calculatePoints(data.set1 || [], correctSet1, dobon);
-    const set2Points = calculatePoints(data.set2 || [], correctSet2, dobon);
-    let totalPoints = set1Points + set2Points;
-      const halfPoints = data.halfPoints || false;
-    if (halfPoints) totalPoints = Math.ceil(totalPoints / 2);
-
-    let createdAtText = "";
-    if (data.createdAt) {
-      createdAtText = data.createdAt.toDate ? data.createdAt.toDate().toLocaleString("ja-JP") : String(data.createdAt);
-    }
-
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${docSnap.id}</td>
-      <td>${(data.set1 || []).join(", ")}</td>
-      <td>${(data.set2 || []).join(", ")}</td>
-      <td>${totalPoints}</td>
-      <td>${createdAtText}</td>
-      <td><input type="checkbox" class="halfPoints" ${halfPoints ? "checked" : ""}></td>
-    `;
-    tbody.appendChild(row);
-
-    // チェックボックス操作で即 Firestore 更新
-    const checkbox = row.querySelector(".halfPoints");
-    checkbox.addEventListener("change", async () => {
-      await setDoc(doc(db, "answers", docSnap.id), {
-        ...data,
-        halfPoints: checkbox.checked
-      });
-      loadAnswers(); // 再描画でポイント更新
-    });
-  });
-}
-    
-
   answersSnap.forEach(docSnap => {
     const data = docSnap.data();
-    const set1Points = calculatePoints(data.set1 || [], correctSet1, dobon);
-    const set2Points = calculatePoints(data.set2 || [], correctSet2, dobon);
+    const set1Points = calculatePoints(data.set1 || [], correctData.set1 || [], correctData.dobon);
+    const set2Points = calculatePoints(data.set2 || [], correctData.set2 || [], correctData.dobon);
     const totalPoints = set1Points + set2Points;
 
-    // createdAtの処理
-  let createdAtText = "";
-  if (data.createdAt) {
-    if (data.createdAt.toDate) {
-      // Firestore Timestamp 型
-      const date = data.createdAt.toDate();
-      createdAtText = date.toLocaleString("ja-JP");
-    } else {
-      // 文字列や数値で保存されている場合
-      createdAtText = String(data.createdAt);
-    }
-  }
+    let createdAtText = "";
+    if (data.createdAt) createdAtText = data.createdAt.toDate ? data.createdAt.toDate().toLocaleString("ja-JP") : String(data.createdAt);
 
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${docSnap.id}</td>
-      <td>${(data.set1 || []).join(", ")}</td>
-      <td>${(data.set2 || []).join(", ")}</td>
+      <td>${(data.set1||[]).map(v=>v.num).join(", ")}</td>
+      <td>${(data.set2||[]).map(v=>v.num).join(", ")}</td>
       <td>${totalPoints}</td>
       <td>${createdAtText}</td>
     `;
     tbody.appendChild(row);
   });
-
-
-  </script>
+}
+</script>
 </body>
 </html>
