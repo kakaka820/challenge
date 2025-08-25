@@ -254,7 +254,41 @@ const hash = await sha256(password);
   return points;
 }
 
-      
+       answersSnap.forEach(docSnap => {
+    const data = docSnap.data();
+    const set1Points = calculatePoints(data.set1 || [], correctSet1, dobon);
+    const set2Points = calculatePoints(data.set2 || [], correctSet2, dobon);
+    let totalPoints = set1Points + set2Points;
+      const halfPoints = data.halfPoints || false;
+    if (halfPoints) totalPoints = Math.ceil(totalPoints / 2);
+
+    let createdAtText = "";
+    if (data.createdAt) {
+      createdAtText = data.createdAt.toDate ? data.createdAt.toDate().toLocaleString("ja-JP") : String(data.createdAt);
+    }
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${docSnap.id}</td>
+      <td>${(data.set1 || []).join(", ")}</td>
+      <td>${(data.set2 || []).join(", ")}</td>
+      <td>${totalPoints}</td>
+      <td>${createdAtText}</td>
+      <td><input type="checkbox" class="halfPoints" ${halfPoints ? "checked" : ""}></td>
+    `;
+    tbody.appendChild(row);
+
+    // チェックボックス操作で即 Firestore 更新
+    const checkbox = row.querySelector(".halfPoints");
+    checkbox.addEventListener("change", async () => {
+      await setDoc(doc(db, "answers", docSnap.id), {
+        ...data,
+        halfPoints: checkbox.checked
+      });
+      loadAnswers(); // 再描画でポイント更新
+    });
+  });
+}
     
 
   answersSnap.forEach(docSnap => {
