@@ -187,7 +187,7 @@ function renderDobonHalf(correctData) {
     const data = snap.exists() ? snap.data() : {};
     data.dobonHalf = cb.checked;
     await setDoc(doc(db, "correct", "answers"), data);
-    renderOptions(data.set1, data.set2, data.dobon); // 再描画
+    
   });
   label.appendChild(cb);
   label.append(" 狂人半減 ");
