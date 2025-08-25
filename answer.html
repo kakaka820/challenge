@@ -64,7 +64,8 @@
   // Import the functions you need from the SDKs you need
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
-  import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, collection, getDocs, setDoc } 
+  from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
   // TODO: Add SDKs for Firebase products that you want to use
   // https://firebase.google.com/docs/web/setup#available-libraries
      
@@ -98,6 +99,90 @@
     const dataView = document.getElementById("dataView");
     const loginError = document.getElementById("loginError");
 
+
+    // 正解セット編集フォームの要素参照
+const correctForm = document.getElementById("correctForm");
+const set1Options = document.getElementById("set1Options");
+const set2Options = document.getElementById("set2Options");
+const dobonOptions = document.getElementById("dobonOptions");
+const saveMessage = document.getElementById("saveMessage");
+
+
+    // 数字 1〜14 をUIに描画する関数
+function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null) {
+  function makeCheckboxes(container, name, limit, selectedValues) {
+    container.innerHTML = "";
+    for (let i = 1; i <= 14; i++) {
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.name = name;
+      checkbox.value = i;
+      if (selectedValues.includes(i)) checkbox.checked = true;
+      label.appendChild(checkbox);
+      label.append(" " + i + " ");
+      container.appendChild(label);
+    }
+  }
+  function makeRadio(container, name, selectedValue) {
+    container.innerHTML = "";
+    for (let i = 1; i <= 14; i++) {
+      const label = document.createElement("label");
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = name;
+      radio.value = i;
+      if (selectedValue === i) radio.checked = true;
+      label.appendChild(radio);
+      label.append(" " + i + " ");
+      container.appendChild(label);
+    }
+  }
+
+  makeCheckboxes(set1Options, "set1", 3, selectedSet1);
+  makeCheckboxes(set2Options, "set2", 3, selectedSet2);
+  makeRadio(dobonOptions, "dobon", selectedDobon);
+}
+
+
+// Firestore から正解セットを読み込んでフォームに反映
+async function loadCorrectSet() {
+  const correctSnap = await getDoc(doc(db, "correct", "answers"));
+  const correctData = correctSnap.exists()
+    ? correctSnap.data()
+    : { set1: [], set2: [], dobon: null };
+  renderOptions(correctData.set1 || [], correctData.set2 || [], correctData.dobon || null);
+}
+
+    // 保存処理
+correctForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const set1 = Array.from(document.querySelectorAll("input[name='set1']:checked"))
+    .map(cb => parseInt(cb.value));
+  const set2 = Array.from(document.querySelectorAll("input[name='set2']:checked"))
+    .map(cb => parseInt(cb.value));
+  const dobonEl = document.querySelector("input[name='dobon']:checked");
+  const dobon = dobonEl ? parseInt(dobonEl.value) : null;
+
+  if (set1.length !== 3 || set2.length !== 3 || dobon === null) {
+    alert("Set1は3つ、Set2は3つ、Dobonは1つ選んでください");
+    return;
+  }
+
+  await setDoc(doc(db, "correct", "answers"), {
+    set1,
+    set2,
+    dobon
+  });
+
+  saveMessage.textContent = "保存しました！";
+  setTimeout(() => (saveMessage.textContent = ""), 2000);
+  // 更新後に回答一覧を再ロード
+  loadAnswers();
+});
+
+    
     // ログイン処理
     loginBtn.addEventListener("click", async () => {
       const name = document.getElementById("adminName").value.trim();
@@ -125,10 +210,14 @@ const hash = await sha256(password);
         return;
       }
 
+
+      
+
       // 認証成功 → データ表示
       loginForm.style.display = "none";
       dataView.style.display = "block";
-      loadAnswers();
+      await loadCorrectSet();
+  loadAnswers();
     });
 
     // answersコレクションを読み込んで表示
