@@ -98,8 +98,11 @@ window.submitAnswer = async function() {
   if (new Set(set1).size !== set1.length || new Set(set2).size !== set2.length) {
     alert("同じ数字を複数して選ぶことはできません"); return;
   }
-  set1 = set1.map(x => Number(x));
-  set2 = set2.map(x => Number(x));
+  set1 = set1.map(x => parseInt(x, 10));
+set2 = set2.map(x => parseInt(x, 10));
+console.log("set1:", set1, set1.map(x => typeof x));
+console.log("set2:", set2, set2.map(x => typeof x));
+
 
   const pwValue = document.getElementById("password").value.trim();
 const hashedPw = await sha256(pwValue);
