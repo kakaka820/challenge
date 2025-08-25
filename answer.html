@@ -9,6 +9,8 @@
   th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
   th { background-color: #f2f2f2; }
   #loginForm, #dataView { max-width: 400px; margin: auto; }
+  #halfSettings { margin-top: 20px; }
+  #halfSettings label { margin-right: 10px; }
 </style>
 </head>
 <body>
@@ -23,6 +25,29 @@
 </div>
 
 <div id="dataView" style="display:none;">
+  <!-- 回答一覧は上に固定 -->
+  <h2>回答一覧</h2>
+  <table id="answersTable">
+    <thead>
+      <tr>
+        <th>名前（ドキュメントID）</th>
+        <th>村役</th>
+        <th>人狼</th>
+        <th>ポイント</th>
+        <th>最終更新時間</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- 半減設定 -->
+  <div id="halfSettings">
+    <h2>正解セットの半減設定</h2>
+    <div id="halfSet1"></div>
+    <div id="halfSet2"></div>
+  </div>
+
+  <!-- 正解セット編集は下に配置 -->
   <h2>正解セット設定</h2>
   <form id="correctForm">
     <div>
@@ -40,20 +65,6 @@
     <button type="submit">保存</button>
     <p id="saveMessage" style="color:green;"></p>
   </form>
-
-  <h2>回答一覧</h2>
-  <table id="answersTable">
-    <thead>
-      <tr>
-        <th>名前（ドキュメントID）</th>
-        <th>村役</th>
-        <th>人狼</th>
-        <th>ポイント</th>
-        <th>最終更新時間</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 </div>
 
 <script type="module">
@@ -93,7 +104,10 @@ const set2Options = document.getElementById("set2Options");
 const dobonOptions = document.getElementById("dobonOptions");
 const saveMessage = document.getElementById("saveMessage");
 
-// 数字描画（半減チェック付き）
+const halfSet1 = document.getElementById("halfSet1");
+const halfSet2 = document.getElementById("halfSet2");
+
+// 数字描画（正解セット用）
 function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null) {
   function makeCheckboxes(container, name, selectedValues) {
     container.innerHTML = "";
@@ -107,15 +121,6 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
       if (found) checkbox.checked = true;
       label.appendChild(checkbox);
       label.append(" " + i + " ");
-
-      // 半減チェック
-      const halfCheck = document.createElement("input");
-      halfCheck.type = "checkbox";
-      halfCheck.name = name + "_half_" + i;
-      halfCheck.checked = found ? found.half : false;
-      label.appendChild(halfCheck);
-      label.append(" 半減 ");
-
       container.appendChild(label);
     }
   }
@@ -138,6 +143,34 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
   makeCheckboxes(set1Options, "set1", selectedSet1);
   makeCheckboxes(set2Options, "set2", selectedSet2);
   makeRadio(dobonOptions, "dobon", selectedDobon);
+
+  // 上部に半減設定用表示
+  renderHalfSettings(selectedSet1, halfSet1, "set1_half");
+  renderHalfSettings(selectedSet2, halfSet2, "set2_half");
+}
+
+// 半減設定UI描画
+function renderHalfSettings(setArray, container, name) {
+  container.innerHTML = "";
+  setArray.forEach(item => {
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.name = name + "_" + item.num;
+    cb.checked = item.half || false;
+    cb.addEventListener("change", async () => {
+      // Firestoreに半減状態を即時保存
+      const correctSnap = await getDoc(doc(db, "correct", "answers"));
+      const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [] };
+      const targetArray = name.startsWith("set1") ? correctData.set1 : correctData.set2;
+      targetArray.forEach(obj => { if (obj.num === item.num) obj.half = cb.checked; });
+      await setDoc(doc(db, "correct", "answers"), correctData);
+      renderOptions(correctData.set1, correctData.set2, correctData.dobon);
+    });
+    label.appendChild(cb);
+    label.append(" " + item.num + " 半減 ");
+    container.appendChild(label);
+  });
 }
 
 // Firestoreからロード
@@ -152,11 +185,10 @@ correctForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   function gatherSet(name) {
-    return Array.from(document.querySelectorAll(`input[name='${name}']`))
-      .filter(cb => cb.checked)
+    return Array.from(document.querySelectorAll(`input[name='${name}']:checked`))
       .map(cb => {
         const num = parseInt(cb.value);
-        const half = document.querySelector(`input[name='${name}_half_${num}']`).checked;
+        const half = document.querySelector(`input[name^='${name}_half_${num}']`)?.checked || false;
         return { num, half };
       });
   }
