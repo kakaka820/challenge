@@ -110,7 +110,7 @@ const halfSet2 = document.getElementById("halfSet2");
 const halfDobon = document.getElementById("halfDobon");
 
 // 数字描画（正解セット用）
-function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null) {
+function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null, correctData = {}) {
   function makeCheckboxes(container, name, selectedValues) {
     container.innerHTML = "";
     for (let i = 1; i <= 14; i++) {
@@ -149,6 +149,7 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
   // 上部に半減設定用表示
   renderHalfSettings(selectedSet1, halfSet1, "set1_half");
   renderHalfSettings(selectedSet2, halfSet2, "set2_half");
+  renderDobonHalf(correctData);
 }
 
 // 半減設定UI描画
@@ -197,7 +198,7 @@ function renderDobonHalf(correctData) {
 async function loadCorrectSet() {
   const correctSnap = await getDoc(doc(db, "correct", "answers"));
   const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [], dobon: null };
-  renderOptions(correctData.set1 || [], correctData.set2 || [], correctData.dobon || null);
+  renderOptions(correctData.set1 || [], correctData.set2 || [], correctData.dobon || null, correctData);
 }
 
 // 保存処理
