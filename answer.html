@@ -109,8 +109,8 @@ const halfSet1 = document.getElementById("halfSet1");
 const halfSet2 = document.getElementById("halfSet2");
 const halfDobon = document.getElementById("halfDobon");
 
-// 数字描画（正解セット用）
-function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null, correctData = {}) {
+// 数字描画（正解セット用） ← 初回ロードのみ
+function renderNumberOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null) {
   function makeCheckboxes(container, name, selectedValues) {
     container.innerHTML = "";
     for (let i = 1; i <= 14; i++) {
@@ -119,8 +119,7 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
       checkbox.type = "checkbox";
       checkbox.name = name;
       checkbox.value = i;
-      const found = selectedValues.find(v => v.num === i);
-      if (found) checkbox.checked = true;
+      if (selectedValues.find(v=>v.num===i)) checkbox.checked = true;
       label.appendChild(checkbox);
       label.append(" " + i + " ");
       container.appendChild(label);
@@ -135,7 +134,7 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
       radio.type = "radio";
       radio.name = name;
       radio.value = i;
-      if (selectedValue === i) radio.checked = true;
+      if (selectedValue===i) radio.checked=true;
       label.appendChild(radio);
       label.append(" " + i + " ");
       container.appendChild(label);
@@ -145,14 +144,9 @@ function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = nul
   makeCheckboxes(set1Options, "set1", selectedSet1);
   makeCheckboxes(set2Options, "set2", selectedSet2);
   makeRadio(dobonOptions, "dobon", selectedDobon);
-
-  // 上部に半減設定用表示
-  renderHalfSettings(selectedSet1, halfSet1, "set1_half");
-  renderHalfSettings(selectedSet2, halfSet2, "set2_half");
-  renderDobonHalf(correctData);
 }
 
-// 半減設定UI描画
+// 半減設定UI描画（変更時に再描画しない）
 function renderHalfSettings(setArray, container, name) {
   container.innerHTML = "";
   setArray.forEach(item => {
@@ -161,44 +155,53 @@ function renderHalfSettings(setArray, container, name) {
     cb.type = "checkbox";
     cb.name = name + "_" + item.num;
     cb.checked = item.half || false;
+
     cb.addEventListener("change", async () => {
-      // Firestoreに半減状態を即時保存
-      const correctSnap = await getDoc(doc(db, "correct", "answers"));
-      const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [] };
-      const targetArray = name.startsWith("set1") ? correctData.set1 : correctData.set2;
-      targetArray.forEach(obj => { if (obj.num === item.num) obj.half = cb.checked; });
-      await setDoc(doc(db, "correct", "answers"), correctData);
-      renderOptions(correctData.set1, correctData.set2, correctData.dobon);
+      const snap = await getDoc(doc(db, "correct", "answers"));
+      const data = snap.exists() ? snap.data() : { set1: [], set2: [] };
+      const targetArray = name.startsWith("set1") ? data.set1 : data.set2;
+      targetArray.forEach(obj => { if (obj.num===item.num) obj.half = cb.checked; });
+      await setDoc(doc(db, "correct", "answers"), data);
+      // 再描画は不要
     });
+
     label.appendChild(cb);
     label.append(" " + item.num + " 半減 ");
     container.appendChild(label);
   });
 }
-  
+
 function renderDobonHalf(correctData) {
   halfDobon.innerHTML = "";
   const label = document.createElement("label");
   const cb = document.createElement("input");
   cb.type = "checkbox";
   cb.checked = correctData.dobonHalf || false;
+
   cb.addEventListener("change", async () => {
     const snap = await getDoc(doc(db, "correct", "answers"));
     const data = snap.exists() ? snap.data() : {};
     data.dobonHalf = cb.checked;
     await setDoc(doc(db, "correct", "answers"), data);
-    
+    // 再描画は不要
   });
+
   label.appendChild(cb);
   label.append(" 狂人半減 ");
   halfDobon.appendChild(label);
 }
-  
+
 // Firestoreからロード
 async function loadCorrectSet() {
   const correctSnap = await getDoc(doc(db, "correct", "answers"));
   const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [], dobon: null };
-  renderOptions(correctData.set1 || [], correctData.set2 || [], correctData.dobon || null, correctData);
+
+  // 数字オプション描画
+  renderNumberOptions(correctData.set1||[], correctData.set2||[], correctData.dobon||null);
+  // 半減設定描画
+  renderHalfSettings(correctData.set1||[], halfSet1, "set1_half");
+  renderHalfSettings(correctData.set2||[], halfSet2, "set2_half");
+  renderDobonHalf(correctData);
 }
 
 // 保存処理
@@ -219,14 +222,14 @@ correctForm.addEventListener("submit", async (e) => {
   const dobonEl = document.querySelector("input[name='dobon']:checked");
   const dobon = dobonEl ? parseInt(dobonEl.value) : null;
 
-  if (set1.length !== 3 || set2.length !== 3 || dobon === null) {
+  if (set1.length!==3 || set2.length!==3 || dobon===null) {
     alert("Set1は3つ、Set2は3つ、Dobonは1つ選んでください");
     return;
   }
 
-  await setDoc(doc(db, "correct", "answers"), { set1, set2, dobon });
+  await setDoc(doc(db,"correct","answers"), { set1, set2, dobon });
   saveMessage.textContent = "保存しました！";
-  setTimeout(() => saveMessage.textContent = "", 2000);
+  setTimeout(()=>saveMessage.textContent="",2000);
   loadAnswers();
 });
 
@@ -234,31 +237,31 @@ correctForm.addEventListener("submit", async (e) => {
 loginBtn.addEventListener("click", async () => {
   const name = document.getElementById("adminName").value.trim();
   const password = document.getElementById("adminPassword").value;
-  if (!name || !password) { loginError.textContent = "名前とパスワードを入力してください"; return; }
+  if (!name || !password) { loginError.textContent="名前とパスワードを入力してください"; return; }
   const hash = await sha256(password);
 
-  const adminRef = doc(db, "admin", name);
+  const adminRef = doc(db,"admin",name);
   const adminSnap = await getDoc(adminRef);
-  if (!adminSnap.exists()) { loginError.textContent = "管理者が存在しません"; return; }
+  if (!adminSnap.exists()) { loginError.textContent="管理者が存在しません"; return; }
   const adminData = adminSnap.data();
-  if (adminData.pw !== hash) { loginError.textContent = "パスワードが正しくありません"; return; }
+  if (adminData.pw!==hash) { loginError.textContent="パスワードが正しくありません"; return; }
 
-  loginForm.style.display = "none";
-  dataView.style.display = "block";
+  loginForm.style.display="none";
+  dataView.style.display="block";
   await loadCorrectSet();
   loadAnswers();
 });
 
 // ポイント計算
 function calculatePoints(answerArray, correctArray, dobon, correctData) {
-  let total = 0;
-  answerArray.forEach((val, idx) => {
-    const point = [6,4,2][idx];
-    const correctItem = correctArray.find(c => c.num === Number(val));
-    if (Number(val) === dobon) {
-      const dobonHalf = correctData.dobonHalf || false;
-      total -= dobonHalf ? Math.ceil(point / 2) : point;
-    } else if (correctItem) {
+  let total=0;
+  answerArray.forEach((val, idx)=>{
+    const point=[6,4,2][idx];
+    const correctItem=correctArray.find(c=>c.num===Number(val));
+    if(Number(val)===dobon){
+      const dobonHalf=correctData.dobonHalf||false;
+      total -= dobonHalf ? Math.ceil(point/2) : point;
+    } else if(correctItem){
       total += correctItem.half ? Math.ceil(point/2) : point;
     }
   });
@@ -267,24 +270,23 @@ function calculatePoints(answerArray, correctArray, dobon, correctData) {
 
 // 回答表示
 async function loadAnswers() {
-  const correctSnap = await getDoc(doc(db, "correct", "answers"));
-  const correctData = correctSnap.exists() ? correctSnap.data() : { set1: [], set2: [], dobon: null };
-  const answersSnap = await getDocs(collection(db, "answers"));
+  const correctSnap = await getDoc(doc(db,"correct","answers"));
+  const correctData = correctSnap.exists() ? correctSnap.data() : { set1:[], set2:[], dobon:null };
+  const answersSnap = await getDocs(collection(db,"answers"));
   const tbody = document.querySelector("#answersTable tbody");
   tbody.innerHTML = "";
 
-  answersSnap.forEach(docSnap => {
+  answersSnap.forEach(docSnap=>{
     const data = docSnap.data();
-    const set1Points = calculatePoints(data.set1 || [], correctData.set1 || [], correctData.dobon, correctData);
-const set2Points = calculatePoints(data.set2 || [], correctData.set2 || [], correctData.dobon, correctData);
-
+    const set1Points = calculatePoints(data.set1||[], correctData.set1||[], correctData.dobon, correctData);
+    const set2Points = calculatePoints(data.set2||[], correctData.set2||[], correctData.dobon, correctData);
     const totalPoints = set1Points + set2Points;
 
-    let createdAtText = "";
-    if (data.createdAt) createdAtText = data.createdAt.toDate ? data.createdAt.toDate().toLocaleString("ja-JP") : String(data.createdAt);
+    let createdAtText="";
+    if(data.createdAt) createdAtText = data.createdAt.toDate ? data.createdAt.toDate().toLocaleString("ja-JP") : String(data.createdAt);
 
     const row = document.createElement("tr");
-    row.innerHTML = `
+    row.innerHTML=`
       <td>${docSnap.id}</td>
       <td>${(data.set1||[]).map(v=>v.num).join(", ")}</td>
       <td>${(data.set2||[]).map(v=>v.num).join(", ")}</td>
