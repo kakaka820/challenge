@@ -132,7 +132,7 @@ const hash = await sha256(password);
       if (val === dobon) {
         points -= 2;
       } else if (correctArray.includes(val)) {
-        points += [10, 6, 3][idx];
+        points += [6, 4, 2][idx];
       }
     });
     return points;
