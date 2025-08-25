@@ -99,11 +99,15 @@ window.submitAnswer = async function() {
     alert("同じ数字を複数して選ぶことはできません"); return;
   }
 
+  const pwValue = document.getElementById("password").value.trim();
+const hashedPw = await sha256(pwValue);
+
   try {
     await setDoc(doc(db, "answers", name), {
-      set1, set2,
-      createdAt: serverTimestamp()
-    });
+  password: hashedPw,   // ← 追加
+  set1, set2,
+  createdAt: serverTimestamp()
+});
     showStep(4);
   } catch (e) {
     console.error("保存に失敗:", e);
