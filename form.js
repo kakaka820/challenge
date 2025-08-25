@@ -83,12 +83,12 @@ window.validateSet1 = function() {
 
 window.submitAnswer = async function() {
   const name = document.getElementById("username").value.trim();
-  const set1 = [
+  let set1 = [
     document.getElementById("set1-1").value,
     document.getElementById("set1-2").value,
     document.getElementById("set1-3").value
   ];
-  const set2 = [
+  let set2 = [
     document.getElementById("set2-1").value,
     document.getElementById("set2-2").value,
     document.getElementById("set2-3").value
@@ -98,13 +98,15 @@ window.submitAnswer = async function() {
   if (new Set(set1).size !== set1.length || new Set(set2).size !== set2.length) {
     alert("同じ数字を複数して選ぶことはできません"); return;
   }
+  set1 = set1.map(x => Number(x));
+  set2 = set2.map(x => Number(x));
 
   const pwValue = document.getElementById("password").value.trim();
 const hashedPw = await sha256(pwValue);
 
   try {
     await setDoc(doc(db, "answers", name), {
-  password: hashedPw,   // ← 追加
+  password: hashedPw,  
   set1, set2,
   createdAt: serverTimestamp()
 });
