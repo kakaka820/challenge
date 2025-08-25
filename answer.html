@@ -45,6 +45,7 @@
     <h2>正解セットの半減設定</h2>
     <div id="halfSet1"></div>
     <div id="halfSet2"></div>
+    <div id="halfDobon"></div>
   </div>
 
   <!-- 正解セット編集は下に配置 -->
@@ -106,6 +107,7 @@ const saveMessage = document.getElementById("saveMessage");
 
 const halfSet1 = document.getElementById("halfSet1");
 const halfSet2 = document.getElementById("halfSet2");
+const halfDobon = document.getElementById("halfDobon");
 
 // 数字描画（正解セット用）
 function renderOptions(selectedSet1 = [], selectedSet2 = [], selectedDobon = null) {
@@ -172,7 +174,25 @@ function renderHalfSettings(setArray, container, name) {
     container.appendChild(label);
   });
 }
-
+  
+function renderDobonHalf(correctData) {
+  halfDobon.innerHTML = "";
+  const label = document.createElement("label");
+  const cb = document.createElement("input");
+  cb.type = "checkbox";
+  cb.checked = correctData.dobonHalf || false;
+  cb.addEventListener("change", async () => {
+    const snap = await getDoc(doc(db, "correct", "answers"));
+    const data = snap.exists() ? snap.data() : {};
+    data.dobonHalf = cb.checked;
+    await setDoc(doc(db, "correct", "answers"), data);
+    renderOptions(data.set1, data.set2, data.dobon); // 再描画
+  });
+  label.appendChild(cb);
+  label.append(" ドボン半減 ");
+  halfDobon.appendChild(label);
+}
+  
 // Firestoreからロード
 async function loadCorrectSet() {
   const correctSnap = await getDoc(doc(db, "correct", "answers"));
@@ -235,8 +255,9 @@ function calculatePoints(answerArray, correctArray, dobon) {
     const point = [6,4,2][idx];
     const correctItem = correctArray.find(c => c.num === Number(val));
     if (Number(val) === dobon) {
-      total -= point;
-    } else if (correctItem) {
+  const dobonHalf = correctData.dobonHalf || false;
+  total -= dobonHalf ? Math.ceil(point / 2) : point;
+} else if (correctItem) {
       total += correctItem.half ? Math.ceil(point/2) : point;
     }
   });
