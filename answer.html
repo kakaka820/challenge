@@ -144,12 +144,26 @@ const hash = await sha256(password);
     const set2Points = calculatePoints(data.set2 || [], correctSet2, dobon);
     const totalPoints = set1Points + set2Points;
 
+    // createdAtの処理
+  let createdAtText = "";
+  if (data.createdAt) {
+    if (data.createdAt.toDate) {
+      // Firestore Timestamp 型
+      const date = data.createdAt.toDate();
+      createdAtText = date.toLocaleString("ja-JP");
+    } else {
+      // 文字列や数値で保存されている場合
+      createdAtText = String(data.createdAt);
+    }
+  }
+
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${docSnap.id}</td>
       <td>${(data.set1 || []).join(", ")}</td>
       <td>${(data.set2 || []).join(", ")}</td>
       <td>${totalPoints}</td>
+      <td>${createdAtText}</td>
     `;
     tbody.appendChild(row);
   });
