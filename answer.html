@@ -292,6 +292,9 @@ async function loadAnswers() {
 
   answersSnap.forEach(docSnap=>{
     const data = docSnap.data();
+    if (!data.set1 || !data.set2 || data.set1.length === 0 || data.set2.length === 0) {
+      return;
+    }
     const set1Points = calculatePoints(data.set1||[], correctData.set1||[], correctData.dobon, correctData);
     const set2Points = calculatePoints(data.set2||[], correctData.set2||[], correctData.dobon, correctData);
     const totalPoints = set1Points + set2Points;
