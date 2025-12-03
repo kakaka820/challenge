@@ -326,6 +326,61 @@ async function loadAnswers() {
     tbody.appendChild(row);
   });
 }
+
+
+  // リセット機能
+const resetBtn = document.getElementById("resetBtn");
+resetBtn.addEventListener("click", async () => {
+  // 第1確認
+  const confirm = confirm("⚠️ 警告 ⚠️\n\n全ての参加者の回答を削除します。\nこの操作は取り消せません。\n\n本当に実行しますか？");
+  
+  if (!confirm) {
+    return;
+  }
+  
+  try {
+    // answersコレクションの全ドキュメントを取得
+    const answersSnap = await getDocs(collection(db, "answers"));
+    
+    let deletedCount = 0;
+    const batch = [];
+    
+    // 各ドキュメントからset1とset2を削除
+    for (const docSnap of answersSnap.docs) {
+      const data = docSnap.data();
+      
+      // set1またはset2が存在する場合のみ処理
+      if (data.set1 || data.set2) {
+        const updateData = {};
+        
+        // set1が存在する場合は削除対象にする
+        if (data.set1) {
+          updateData.set1 = deleteField();
+        }
+        
+        // set2が存在する場合は削除対象にする
+        if (data.set2) {
+          updateData.set2 = deleteField();
+        }
+        
+        batch.push(updateDoc(doc(db, "answers", docSnap.id), updateData));
+        deletedCount++;
+      }
+    }
+    
+    // 一括更新
+    await Promise.all(batch);
+    
+    alert(`✅ リセット完了\n\n${deletedCount}件の回答を削除しました。`);
+    
+    // 回答一覧を再読み込み
+    loadAnswers();
+    
+  } catch (error) {
+    console.error("リセット中にエラーが発生:", error);
+    alert("❌ エラーが発生しました\n\n" + error.message);
+  }
+});
 </script>
 </body>
 </html>
