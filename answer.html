@@ -332,9 +332,9 @@ async function loadAnswers() {
 const resetBtn = document.getElementById("resetBtn");
 resetBtn.addEventListener("click", async () => {
   // 第1確認
-  const confirm = confirm("全ての参加者の回答を削除します。\nこの操作は取り消せません。\n\n本当に実行しますか？");
+  const confirm1 = confirm("全ての参加者の回答を削除します。\nこの操作は取り消せません。\n\n本当に実行しますか？");
   
-  if (!confirm) {
+  if (!confirm1) {
     return;
   }
   
