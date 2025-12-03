@@ -332,7 +332,7 @@ async function loadAnswers() {
 const resetBtn = document.getElementById("resetBtn");
 resetBtn.addEventListener("click", async () => {
   // 第1確認
-  const confirm = confirm("⚠️ 警告 ⚠️\n\n全ての参加者の回答を削除します。\nこの操作は取り消せません。\n\n本当に実行しますか？");
+  const confirm = confirm("全ての参加者の回答を削除します。\nこの操作は取り消せません。\n\n本当に実行しますか？");
   
   if (!confirm) {
     return;
@@ -371,14 +371,14 @@ resetBtn.addEventListener("click", async () => {
     // 一括更新
     await Promise.all(batch);
     
-    alert(`✅ リセット完了\n\n${deletedCount}件の回答を削除しました。`);
+    alert(`${deletedCount}件の回答を削除しました。`);
     
     // 回答一覧を再読み込み
     loadAnswers();
     
   } catch (error) {
     console.error("リセット中にエラーが発生:", error);
-    alert("❌ エラーが発生しました\n\n" + error.message);
+    alert("エラーが発生しました\n\n" + error.message);
   }
 });
 </script>
