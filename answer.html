@@ -241,9 +241,18 @@ correctForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  await setDoc(doc(db,"correct","answers"), { set1, set2, dobon });
+  const snap = await getDoc(doc(db, "correct", "answers"));
+  const existingData = snap.exists() ? snap.data() : {};
+  const dobonHalf = existingData.dobonHalf || false;
+  await setDoc(doc(db, "correct", "answers"), { 
+    set1, 
+    set2, 
+    dobon,
+    dobonHalf
+  });
+  
   saveMessage.textContent = "保存しました！";
-  setTimeout(()=>saveMessage.textContent="",2000);
+  setTimeout(() => saveMessage.textContent = "", 2000);
   loadAnswers();
 });
 
