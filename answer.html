@@ -321,7 +321,9 @@ async function loadAnswers() {
     row.innerHTML=`
       <td>${docSnap.id}</td>
       <td>${(data.set1||[]).map(v => v.num ?? v).join(", ")}</td>
-<td>${(data.set2||[]).map(v => v.num ?? v).join(", ")}</td>
+      <td>${set1Points}</td>
+      <td>${(data.set2||[]).map(v => v.num ?? v).join(", ")}</td>
+      <td>${set2Points}</td>
       <td>${totalPoints}</td>
       <td>${createdAtText}</td>
     `;
